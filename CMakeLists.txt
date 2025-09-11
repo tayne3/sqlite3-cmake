@@ -56,8 +56,8 @@ else()
         URL_HASH ${SQLITE3_EXTERNAL_HASH}
         DOWNLOAD_ONLY
     )
-    set(SQLITE3_SOURCE_FILE ${sqlite3_external_SOURCE_DIR}/sqlite3.c)
-    set(SQLITE3_HEADER_DIR ${sqlite3_external_SOURCE_DIR})
+    set(SQLITE3_SOURCE_FILE ${sqlite3-external_SOURCE_DIR}/sqlite3.c)
+    set(SQLITE3_HEADER_DIR ${sqlite3-external_SOURCE_DIR})
 endif()
 
 # Extract SQLite version from source

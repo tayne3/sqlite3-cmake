@@ -62,7 +62,7 @@ CPMAddPackage(
     NAME sqlite3
     URI "gh:tayne3/sqlite3-cmake@3.50.4"
     OPTIONS "SQLITE3_EXTERNAL_URL https://www.sqlite.org/2025/sqlite-amalgamation-3490100.zip"
-            "SQLITE3_EXTERNAL_HASH SHA256=e7eb4cfb2d95626e782cfa748f534c74482f2c3c93f13ee828b9187ce05b2da7"
+            "SQLITE3_EXTERNAL_HASH SHA3_256=e7eb4cfb2d95626e782cfa748f534c74482f2c3c93f13ee828b9187ce05b2da7"
 )
 
 add_executable(example main.c)
