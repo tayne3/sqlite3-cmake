@@ -1,0 +1,160 @@
+name: Auto Build
+run-name: ${{ github.actor }} is automatically checking and building the latest SQLite3 version 🚀
+
+on:
+  schedule:
+    # Check for new version and build every day at UTC 00:00
+    - cron: '0 0 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: write
+
+jobs:
+  check-and-build:
+    name: Check for new SQLite version and build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Get latest SQLite version
+        id: check
+        run: |
+          # Get latest version information
+          CSV="$(wget -q https://sqlite.org/download.html -O - | grep -E 'sqlite-amalgamation-[0-9]+\.zip,')"
+          NEW_VERSION="$(echo "${CSV}" | awk -F, '{print $2}')"
+          NEW_URL="https://sqlite.org/$(echo "${CSV}" | awk -F, '{print $3}')"
+          NEW_HASH="$(echo "${CSV}" | awk -F, '{print $5}')"
+          
+          echo "new_version=${NEW_VERSION}" >> "${GITHUB_OUTPUT}"
+          echo "new_url=${NEW_URL}" >> "${GITHUB_OUTPUT}"
+          echo "new_hash=${NEW_HASH}" >> "${GITHUB_OUTPUT}"
+          
+          echo "ℹ️ Latest SQLite version: ${NEW_VERSION}"
+          echo "ℹ️ Download URL: ${NEW_URL}"
+          echo "ℹ️ SHA3-256 hash: ${NEW_HASH}"
+
+      - name: Check if version already built
+        id: version_check
+        run: |
+          # Check version record file
+          if [ -f "build-history.json" ]; then
+            # Check if version has already been built
+            if jq -e --arg version "${{ steps.check.outputs.new_version }}" '.built_versions[] | select(.version == $version)' build-history.json > /dev/null; then
+              echo "should_build=false" >> "${GITHUB_OUTPUT}"
+              echo "ℹ️ Version ${{ steps.check.outputs.new_version }} already built"
+            else
+              echo "should_build=true" >> "${GITHUB_OUTPUT}"
+              echo "ℹ️ New version ${{ steps.check.outputs.new_version }} found, will build"
+            fi
+          else
+            echo "should_build=true" >> "${GITHUB_OUTPUT}"
+            echo "ℹ️ No build history found, will build"
+          fi
+
+      - name: Build new version
+        if: steps.version_check.outputs.should_build == 'true'
+        run: |
+          echo "🔨 Building SQLite ${{ steps.check.outputs.new_version }}"
+          export CPM_SOURCE_CACHE=${GITHUB_WORKSPACE}/cmake_modules
+          
+          # Build static library
+          echo "Building static library..."
+          cmake -B cmake-build-static -DCMAKE_BUILD_TYPE=Release \
+            -DBUILD_SHARED_LIBS=OFF \
+            -DSQLITE3_EXTERNAL_URL="${{ steps.check.outputs.new_url }}" \
+            -DSQLITE3_EXTERNAL_HASH="SHA256=${{ steps.check.outputs.new_hash }}"
+          cmake --build cmake-build-static --config Release
+          
+          # Build shared library
+          echo "Building shared library..."
+          cmake -B cmake-build-shared -DCMAKE_BUILD_TYPE=Release \
+            -DBUILD_SHARED_LIBS=ON \
+            -DSQLITE3_EXTERNAL_URL="${{ steps.check.outputs.new_url }}" \
+            -DSQLITE3_EXTERNAL_HASH="SHA256=${{ steps.check.outputs.new_hash }}"
+          cmake --build cmake-build-shared --config Release
+          
+          echo "✅ Build completed successfully"
+
+      - name: Update build history
+        if: steps.version_check.outputs.should_build == 'true'
+        run: |
+          # Update build history
+          BUILD_DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          
+          # Create new version record
+          NEW_RECORD=$(jq -n \
+            --arg version "${{ steps.check.outputs.new_version }}" \
+            --arg url "${{ steps.check.outputs.new_url }}" \
+            --arg hash "${{ steps.check.outputs.new_hash }}" \
+            --arg date "$BUILD_DATE" \
+            '{
+              version: $version,
+              url: $url,
+              hash: $hash,
+              build_date: $date,
+              build_status: "success"
+            }')
+          
+          # Update build history file
+          if [ -f "build-history.json" ]; then
+            jq --argjson new_record "$NEW_RECORD" '.built_versions += [$new_record] | .last_updated = now | .last_updated |= strftime("%Y-%m-%dT%H:%M:%SZ")' build-history.json > build-history-temp.json
+          else
+            jq -n \
+              --argjson new_record "$NEW_RECORD" \
+              '{
+                description: "SQLite3 build history - tracks versions that have been successfully built",
+                last_updated: now | strftime("%Y-%m-%dT%H:%M:%SZ"),
+                built_versions: [$new_record]
+              }' > build-history-temp.json
+          fi
+          
+          mv build-history-temp.json build-history.json
+          
+          echo "📝 Updated build history with version ${{ steps.check.outputs.new_version }}"
+
+      - name: Commit and push changes
+        if: steps.version_check.outputs.should_build == 'true'
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          
+          # Add modified files
+          git add build-history.json
+          
+          # Create commit
+          git commit -m "docs: Add SQLite ${{ steps.check.outputs.new_version }} to build history
+
+          - Version: ${{ steps.check.outputs.new_version }}
+          - URL: ${{ steps.check.outputs.new_url }}
+          - Hash: ${{ steps.check.outputs.new_hash }}
+          - Build date: $(date -u +"%Y-%m-%d %H:%M:%S UTC")"
+          
+          # Push changes
+          git push origin master
+          
+          echo "🚀 Successfully committed and pushed build history update"
+
+      - name: Create release tag
+        if: steps.version_check.outputs.should_build == 'true'
+        run: |
+          # Create version tag
+          git tag "sqlite-${{ steps.check.outputs.new_version }}"
+          git push origin "sqlite-${{ steps.check.outputs.new_version }}"
+          
+          echo "🏷️ Created release tag: sqlite-${{ steps.check.outputs.new_version }}"
+
+      - name: Summary
+        run: |
+          if [ "${{ steps.version_check.outputs.should_build }}" == "true" ]; then
+            echo "🎉 Successfully built and recorded SQLite ${{ steps.check.outputs.new_version }}"
+            echo "📋 Build history updated"
+            echo "🏷️ Release tag created: sqlite-${{ steps.check.outputs.new_version }}"
+          else
+            echo "ℹ️ No new version to build"
+            echo "📋 Current version: ${{ steps.check.outputs.new_version }} (already built)"
+          fi
