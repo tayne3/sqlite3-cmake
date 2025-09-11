@@ -138,23 +138,3 @@ jobs:
           git push origin master
           
           echo "🚀 Successfully committed and pushed build history update"
-
-      - name: Create release tag
-        if: steps.version_check.outputs.should_build == 'true'
-        run: |
-          # Create version tag
-          git tag "sqlite-${{ steps.check.outputs.new_version }}"
-          git push origin "sqlite-${{ steps.check.outputs.new_version }}"
-          
-          echo "🏷️ Created release tag: sqlite-${{ steps.check.outputs.new_version }}"
-
-      - name: Summary
-        run: |
-          if [ "${{ steps.version_check.outputs.should_build }}" == "true" ]; then
-            echo "🎉 Successfully built and recorded SQLite ${{ steps.check.outputs.new_version }}"
-            echo "📋 Build history updated"
-            echo "🏷️ Release tag created: sqlite-${{ steps.check.outputs.new_version }}"
-          else
-            echo "ℹ️ No new version to build"
-            echo "📋 Current version: ${{ steps.check.outputs.new_version }} (already built)"
-          fi
