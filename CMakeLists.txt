@@ -46,13 +46,13 @@ set(SQLITE3_EXTERNAL_HASH
     CACHE STRING "Download external hash (empty to use local source)"
 )
 option(SQLITE3_BUILD_SHARED_LIBS "Build shared libraries" OFF)
-option(SQLITE3_ENABLE_THREADSAFE "Build a thread-safe library" OFF)
+option(SQLITE3_ENABLE_THREADSAFE "Build a thread-safe library" ON)
 option(SQLITE3_ENABLE_DYNAMIC_EXTENSIONS "Support loadable extensions" OFF)
-option(SQLITE3_ENABLE_MATH "Enable SQL math functions" ON)
+option(SQLITE3_ENABLE_MATH "Enable SQL math functions" OFF)
 option(SQLITE3_ENABLE_FTS3 "Include FTS3 support" OFF)
 option(SQLITE3_ENABLE_FTS4 "Include FTS4 support" OFF)
-option(SQLITE3_ENABLE_FTS5 "Include FTS5 support" ON)
-option(SQLITE3_ENABLE_RTREE "Include R-tree support" ON)
+option(SQLITE3_ENABLE_FTS5 "Include FTS5 support" OFF)
+option(SQLITE3_ENABLE_RTREE "Include R-tree support" OFF)
 option(SQLITE3_ENABLE_SESSION "Enable the session extension" OFF)
 option(SQLITE3_OMIT_DEPRECATED "Omit deprecated features" ON)
 
