@@ -1,6 +1,6 @@
 {
   "description": "SQLite3 build history - tracks versions that have been successfully built",
-  "last_updated": "2025-11-29T01:15:57Z",
+  "last_updated": "2026-01-10T01:22:11Z",
   "built_versions": [
     {
       "version": "3.50.4",
@@ -21,6 +21,13 @@
       "url": "https://sqlite.org/2025/sqlite-amalgamation-3510100.zip",
       "hash": "856b52ffe7383d779bb86a0ed1ddc19c41b0e5751fa14ce6312f27534e629b64",
       "build_date": "2025-11-29T01:15:57Z",
+      "build_status": "success"
+    },
+    {
+      "version": "3.51.2",
+      "url": "https://sqlite.org/2026/sqlite-amalgamation-3510200.zip",
+      "hash": "9a9dd4eef7a97809bfacd84a7db5080a5c0eff7aaf1fc1aca20a6dc9a0c26f96",
+      "build_date": "2026-01-10T01:22:11Z",
       "build_status": "success"
     }
   ]
