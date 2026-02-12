@@ -11,7 +11,7 @@ endif()
 
 project(
   sqlite3
-  VERSION 3.51.0
+  VERSION 3.51.2
   DESCRIPTION "SQLite3 CMake wrapper"
   LANGUAGES C
 )
