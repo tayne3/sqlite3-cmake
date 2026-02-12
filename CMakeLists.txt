@@ -1,4 +1,14 @@
 cmake_minimum_required(VERSION 3.14 FATAL_ERROR)
+
+# In-source build guard
+if(CMAKE_SOURCE_DIR STREQUAL CMAKE_BINARY_DIR)
+  message(
+    FATAL_ERROR
+    "In-source builds are not supported. "
+    "You may need to delete 'CMakeCache.txt' and 'CMakeFiles/' before rebuilding this project."
+  )
+endif()
+
 project(
   sqlite3
   VERSION 3.51.0
@@ -16,8 +26,12 @@ include(CheckTypeSize)
 include(FetchContent)
 include(GNUInstallDirs)
 
-include(${CMAKE_CURRENT_LIST_DIR}/cmake/ProjectIsTopLevel.cmake)
 include(${CMAKE_CURRENT_LIST_DIR}/cmake/CPM.cmake)
+
+# This variable is set by project() in CMake 3.21+
+if(NOT DEFINED PROJECT_IS_TOP_LEVEL)
+  string(COMPARE EQUAL "${CMAKE_SOURCE_DIR}" "${CMAKE_CURRENT_SOURCE_DIR}" PROJECT_IS_TOP_LEVEL)
+endif()
 
 if(PROJECT_IS_TOP_LEVEL)
   get_property(isMultiConfig GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
@@ -149,13 +163,15 @@ if(STRERROR_R)
   check_c_source_runs(
     "
     #include <string.h>
+    #include <errno.h>
     int main() {
-        return (strerror_r(0, (char*)0, 0) == (char*)0);
+        char buf[256];
+        return (strerror_r(0, buf, sizeof(buf)) == (char*)0);
     }
     "
-    HAVE_GNU_STRERROR_R
+    HAVE_GNU_STRERROR_R_TEST
   )
-  if(HAVE_GNU_STRERROR_R)
+  if(HAVE_GNU_STRERROR_R_TEST)
     target_compile_definitions(sqlite3 PRIVATE STRERROR_R_CHAR_P=1)
   endif()
 endif()
