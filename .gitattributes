@@ -1,1 +1,3 @@
-/.git*  export-ignore
+/.git* export-ignore
+src/* linguist-detectable=false
+*.json linguist-generated
