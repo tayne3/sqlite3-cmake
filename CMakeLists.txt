@@ -11,13 +11,13 @@ endif()
 
 project(
   sqlite3
-  VERSION 3.51.2
+  VERSION 3.51.3
   DESCRIPTION "SQLite3 CMake wrapper"
   LANGUAGES C
 )
 
 include(CMakePackageConfigHelpers)
-include(CheckCSourceRuns)
+include(CheckCSourceCompiles)
 include(CheckFunctionExists)
 include(CheckIncludeFiles)
 include(CheckLibraryExists)
@@ -160,13 +160,15 @@ check_and_define(FUNCS check_function_exists)
 
 if(STRERROR_R)
   target_compile_definitions(sqlite3 PRIVATE HAVE_STRERROR_R=1 HAVE_DECL_STRERROR_R=1)
-  check_c_source_runs(
+  check_c_source_compiles(
     "
     #include <string.h>
     #include <errno.h>
     int main() {
         char buf[256];
-        return (strerror_r(0, buf, sizeof(buf)) == (char*)0);
+        char c = *strerror_r(0, buf, sizeof(buf));
+        (void)c;
+        return 0;
     }
     "
     HAVE_GNU_STRERROR_R_TEST
