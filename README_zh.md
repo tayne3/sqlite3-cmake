@@ -4,7 +4,7 @@
 
 ![CMake](https://img.shields.io/badge/CMake-3.14%2B-brightgreen)
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
-![SQLite](https://img.shields.io/badge/SQLite-3.51.2-green.svg)
+![SQLite](https://img.shields.io/badge/SQLite-3.51.3-green.svg)
 [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/tayne3/sqlite3-cmake)
 
 一个为 [SQLite3](https://www.sqlite.org/) amalgamation 源码提供的 CMake 封装项目，旨在帮助你轻松地将 SQLite3 集成到自己的 CMake 项目中。
@@ -41,7 +41,7 @@ if(NOT DEFINED ENV{CPM_SOURCE_CACHE})
 endif()
 include(cmake/CPM.cmake)
 
-CPMAddPackage("gh:tayne3/sqlite3-cmake@3.51.2")
+CPMAddPackage("gh:tayne3/sqlite3-cmake@3.51.3")
 
 add_executable(example main.c)
 target_link_libraries(example sqlite3::sqlite3)
@@ -60,7 +60,7 @@ include(cmake/CPM.cmake)
 
 CPMAddPackage(
     NAME sqlite3
-    URI "gh:tayne3/sqlite3-cmake@3.51.2"
+    URI "gh:tayne3/sqlite3-cmake@3.51.3"
     OPTIONS
     "SQLITE3_EXTERNAL_URL https://www.sqlite.org/2025/sqlite-amalgamation-3490100.zip"
     "SQLITE3_EXTERNAL_HASH SHA3_256=e7eb4cfb2d95626e782cfa748f534c74482f2c3c93f13ee828b9187ce05b2da7"
